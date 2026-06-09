@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>普通用户主页</title>
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0-alpha1/css/bootstrap.min.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="#">用户面板</a>
+    <div class="ms-auto">
+            <span class="navbar-text text-white">
+                欢迎，<span th:text="${username}">用户</span>
+            </span>
+      <a href="/login" class="btn btn-outline-light btn-sm ms-3">注销</a>
+    </div>
+  </div>
+</nav>
+<div class="container mt-5">
+  <div class="alert alert-info">
+    <h4>普通用户专区</h4>
+    <p>这是普通用户登录后看到的界面。</p>
+  </div>
+  <a href="/admin/home" class="btn btn-primary">访问管理页面</a>
+  <a href="/" class="btn btn-primary">返回首页</a>
+</div>
+</body>
+</html>
