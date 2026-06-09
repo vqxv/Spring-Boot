@@ -1,0 +1,8 @@
+/workspace/demo/src/main/java/com/example/demo/DemoApplication.java
+/workspace/demo/src/main/java/com/example/demo/controller/AuthController.java
+/workspace/demo/src/main/java/com/example/demo/entity/Authority.java
+/workspace/demo/src/main/java/com/example/demo/entity/MyUser.java
+/workspace/demo/src/main/java/com/example/demo/repository/AuthorityRepository.java
+/workspace/demo/src/main/java/com/example/demo/repository/UserRepository.java
+/workspace/demo/src/main/java/com/example/demo/security/SecurityConfig.java
+/workspace/demo/src/main/java/com/example/demo/service/UserService.java

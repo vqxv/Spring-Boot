@@ -7,6 +7,7 @@
   <style>
     body { background-color: #f8f9fa; }
     .register-card { max-width: 500px; margin: 80px auto; }
+    .field-error { color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem; display: none; }
   </style>
 </head>
 <body>
@@ -16,21 +17,27 @@
       <h3>注册新账号</h3>
     </div>
     <div class="card-body">
-      <form method="post" action="/register" th:object="${user}">
+      <form method="post" action="/register" th:object="${user}" id="register-form">
+        <!-- 用户名 -->
         <div class="mb-3">
           <label class="form-label">用户名</label>
           <input type="text" th:field="*{username}" class="form-control" required>
+          <div th:if="${error_username}" class="field-error" th:text="${error_username}" style="display:block;"></div>
+          <div id="error-username" class="field-error"></div>
         </div>
+        <!-- 密码 -->
         <div class="mb-3">
           <label class="form-label">密码</label>
           <input type="password" th:field="*{password}" class="form-control" required>
+          <div th:if="${error_password}" class="field-error" th:text="${error_password}" style="display:block;"></div>
+          <div id="error-password" class="field-error"></div>
         </div>
+        <!-- 确认密码 -->
         <div class="mb-3">
           <label class="form-label">确认密码</label>
           <input type="password" th:field="*{repassword}" class="form-control" required>
-        </div>
-        <div th:if="${param.error}" class="alert alert-danger">
-          注册失败，用户名可能已存在或密码不一致
+          <div th:if="${error_repassword}" class="field-error" th:text="${error_repassword}" style="display:block;"></div>
+          <div id="error-repassword" class="field-error"></div>
         </div>
         <button type="submit" class="btn btn-success w-100">立即注册</button>
       </form>
@@ -40,5 +47,49 @@
     </div>
   </div>
 </div>
+
+<!-- 前端实时校验 -->
+<script>
+  (function () {
+    const form = document.getElementById('register-form');
+    const username = document.querySelector('input[name="username"]');
+    const password = document.querySelector('input[name="password"]');
+    const repassword = document.querySelector('input[name="repassword"]');
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = msg; el.style.display = 'block'; }
+    }
+    function clearError(id) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = ''; el.style.display = 'none'; }
+    }
+
+    // 输入时清除对应错误
+    username.addEventListener('input', function () { clearError('error-username'); });
+    password.addEventListener('input', function () { clearError('error-password'); clearError('error-repassword'); });
+    repassword.addEventListener('input', function () { clearError('error-repassword'); });
+
+    // 提交前前端校验
+    form.addEventListener('submit', function (e) {
+      let valid = true;
+
+      if (!username.value.trim()) {
+        showError('error-username', '用户名不能为空');
+        valid = false;
+      }
+      if (!password.value.trim()) {
+        showError('error-password', '密码不能为空');
+        valid = false;
+      }
+      if (password.value !== repassword.value) {
+        showError('error-repassword', '两次输入的密码不一致');
+        valid = false;
+      }
+
+      if (!valid) e.preventDefault();
+    });
+  })();
+</script>
 </body>
 </html>

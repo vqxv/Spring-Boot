@@ -1,0 +1,8 @@
+com/example/demo/repository/UserRepository.class
+com/example/demo/entity/MyUser.class
+com/example/demo/security/SecurityConfig.class
+com/example/demo/repository/AuthorityRepository.class
+com/example/demo/entity/Authority.class
+com/example/demo/DemoApplication.class
+com/example/demo/service/UserService.class
+com/example/demo/controller/AuthController.class

@@ -1,0 +1,8 @@
+autoOpen: false
+apps:
+  - port: 8080
+    run: mvn spring-boot:run
+    root: ./demo
+    name: springboot-backend
+    description: Spring Boot 后端 API 服务
+    autoOpen: true

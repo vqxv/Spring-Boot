@@ -27,8 +27,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@ModelAttribute("user") MyUser user) {
-        return userService.register(user);
+    public String register(@ModelAttribute("user") MyUser user, Model model) {
+        var result = userService.register(user);
+        if (Boolean.TRUE.equals(result.get("success"))) {
+            return "redirect:/login";
+        }
+        // 将错误消息放入 Model，让前端展示行内提示
+        result.forEach((key, value) -> model.addAttribute(key, value));
+        return "register";
     }
 
     @GetMapping("/user/home")
