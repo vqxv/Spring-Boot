@@ -3,8 +3,6 @@ package com.example.demo.security;
 import com.example.demo.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,8 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -26,7 +22,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, UserService userService, PasswordEncoder passwordEncoder) throws Exception {
-        // 配置AuthenticationManager
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userService);
         authProvider.setPasswordEncoder(passwordEncoder);
         
@@ -42,21 +37,7 @@ public class SecurityConfig {
                         .loginPage("/")
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/home")
-                        .failureHandler((request, response, exception) -> {
-                            // 检查是否是AJAX请求
-                            String requestedWith = request.getHeader("X-Requested-With");
-                            String accept = request.getHeader("Accept");
-                            boolean isAjax = "XMLHttpRequest".equals(requestedWith) || 
-                                           (accept != null && accept.contains("application/json"));
-                            
-                            if (isAjax) {
-                                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                                response.setContentType("text/plain;charset=UTF-8");
-                                response.getWriter().write("用户名或密码错误");
-                            } else {
-                                response.sendRedirect("/?error");
-                            }
-                        })
+                        .failureUrl("/?error")
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -69,23 +50,12 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedPage("/denied")
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            // 检查是否是AJAX请求
-                            if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With")) ||
-                                (request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json"))) {
-                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                                response.setContentType("text/plain;charset=UTF-8");
-                                response.getWriter().write("认证失败");
-                            } else {
-                                response.sendRedirect("/?error");
-                            }
-                        })
                 )
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
                         .cacheControl(cache -> cache.disable())
                 )
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/login", "/register", "/reset-password"));
         return http.build();
     }
 }

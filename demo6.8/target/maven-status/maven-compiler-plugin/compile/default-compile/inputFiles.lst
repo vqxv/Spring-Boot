@@ -1,6 +1,7 @@
-D:\Users\IdeaProjects\demo6.8\src\main\java\com\example\demo\controller\AuthController.java
-D:\Users\IdeaProjects\demo6.8\src\main\java\com\example\demo\DemoApplication.java
-D:\Users\IdeaProjects\demo6.8\src\main\java\com\example\demo\entity\User.java
-D:\Users\IdeaProjects\demo6.8\src\main\java\com\example\demo\repository\UserRepository.java
-D:\Users\IdeaProjects\demo6.8\src\main\java\com\example\demo\security\SecurityConfig.java
-D:\Users\IdeaProjects\demo6.8\src\main\java\com\example\demo\service\UserService.java
+/workspace/demo6.8/src/main/java/com/example/demo/DemoApplication.java
+/workspace/demo6.8/src/main/java/com/example/demo/controller/AuthController.java
+/workspace/demo6.8/src/main/java/com/example/demo/controller/UserManagementController.java
+/workspace/demo6.8/src/main/java/com/example/demo/entity/User.java
+/workspace/demo6.8/src/main/java/com/example/demo/repository/UserRepository.java
+/workspace/demo6.8/src/main/java/com/example/demo/security/SecurityConfig.java
+/workspace/demo6.8/src/main/java/com/example/demo/service/UserService.java

@@ -36,18 +36,18 @@
         <a href="/home" class="btn btn-success btn-lg mt-3">进入主页</a>
     </div>
     <div th:if="${param.registered}" class="alert alert-success mt-3">注册成功，请登录</div>
-    <div th:if="${param.logout}" class="alert alert-info mt-3">已退出</div>
 </div>
 
 <!-- 登录模态框 -->
 <div class="modal fade" id="loginModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
-        <form id="loginForm" onsubmit="return handleLogin(event)">
+        <form id="loginForm" th:action="@{/login}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="modal-header"><h5>登录</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <input type="text" id="loginUsername" name="username" class="form-control" placeholder="用户名" required>
                 <input type="password" id="loginPassword" name="password" class="form-control mt-2" placeholder="密码" required>
-                <div id="loginErrorMsg" class="alert alert-danger mt-2" style="display:none;">用户名或密码错误</div>
+                <div th:if="${param.error}" class="alert alert-danger mt-2">用户名或密码错误</div>
                 <div class="mt-2 text-end">
                     <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" data-bs-dismiss="modal" class="text-decoration-none">忘记密码？</a>
                 </div>
@@ -103,58 +103,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// AJAX登录处理
-function handleLogin(event) {
-    event.preventDefault();
-    
-    var username = document.getElementById('loginUsername').value;
-    var password = document.getElementById('loginPassword').value;
-    var errorMsg = document.getElementById('loginErrorMsg');
-    
-    // 隐藏之前的错误信息
-    errorMsg.style.display = 'none';
-    
-    // 获取CSRF token
-    var csrfToken = document.querySelector('meta[name="_csrf"]').content;
-    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
-    
-    // 发送AJAX请求
-    fetch('/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-Requested-With': 'XMLHttpRequest',
-            [csrfHeader]: csrfToken
-        },
-        body: 'username=' + encodeURIComponent(username) + 
-              '&password=' + encodeURIComponent(password)
-    })
-    .then(response => {
-        if (response.ok) {
-            // 登录成功，跳转到首页
-            window.location.href = '/home';
-        } else {
-            // 登录失败，读取错误信息
-            return response.text();
-        }
-    })
-    .then(result => {
-        if (result) {
-            // 显示错误信息
-            errorMsg.textContent = result;
-            errorMsg.style.display = 'block';
-        }
-    })
-    .catch(error => {
-        errorMsg.textContent = '网络错误，请稍后重试';
-        errorMsg.style.display = 'block';
-        console.error('Error:', error);
-    });
-    
-    return false;
-}
+// ==================== 登录模态框自动打开 ====================
+// 如果 URL 带有 ?error 参数，自动打开登录模态框
+document.addEventListener('DOMContentLoaded', function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('error')) {
+        var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+    }
+});
 
-// AJAX注册处理
+// ==================== 注册处理 ====================
 function handleRegister(event) {
     event.preventDefault();
     
@@ -165,61 +124,58 @@ function handleRegister(event) {
     var errorMsg = document.getElementById('registerErrorMsg');
     var successMsg = document.getElementById('registerSuccessMsg');
     
-    // 隐藏之前的消息
     passwordError.style.display = 'none';
     errorMsg.style.display = 'none';
     successMsg.style.display = 'none';
     
-    // 前端验证
     if (password !== repassword) {
         passwordError.style.display = 'block';
         return false;
     }
     
-    // 获取CSRF token
+    // 获取 CSRF token
     var csrfToken = document.querySelector('meta[name="_csrf"]').content;
     var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
     
-    // 发送AJAX请求
-    fetch('/register', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            [csrfHeader]: csrfToken  // 添加CSRF token
-        },
-        body: 'username=' + encodeURIComponent(username) + 
-              '&password=' + encodeURIComponent(password) + 
-              '&repassword=' + encodeURIComponent(repassword)
-    })
-    .then(response => response.text())
-    .then(result => {
-        if (result === 'success') {
-            // 注册成功
-            successMsg.style.display = 'block';
-            // 清空表单
-            document.getElementById('registerForm').reset();
-            // 2秒后关闭模态框并跳转到登录页
-            setTimeout(function() {
-                var modal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
-                modal.hide();
-                window.location.href = '/?registered';
-            }, 2000);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/register', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader(csrfHeader, csrfToken);
+    
+    xhr.onload = function() {
+        var result = xhr.responseText;
+        if (xhr.status === 200) {
+            if (result === 'success') {
+                successMsg.style.display = 'block';
+                document.getElementById('registerForm').reset();
+                setTimeout(function() {
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
+                    modal.hide();
+                    window.location.href = '/?registered';
+                }, 2000);
+            } else {
+                errorMsg.textContent = result;
+                errorMsg.style.display = 'block';
+            }
         } else {
-            // 注册失败，显示错误信息
-            errorMsg.textContent = result;
+            errorMsg.textContent = '服务器错误，请稍后重试';
             errorMsg.style.display = 'block';
         }
-    })
-    .catch(error => {
+    };
+    
+    xhr.onerror = function() {
         errorMsg.textContent = '网络错误，请稍后重试';
         errorMsg.style.display = 'block';
-        console.error('Error:', error);
-    });
+    };
+    
+    xhr.send('username=' + encodeURIComponent(username) + 
+             '&password=' + encodeURIComponent(password) + 
+             '&repassword=' + encodeURIComponent(repassword));
     
     return false;
 }
 
-// 忘记密码处理
+// ==================== 忘记密码处理 ====================
 function handleForgotPassword(event) {
     event.preventDefault();
     
@@ -229,49 +185,46 @@ function handleForgotPassword(event) {
     var errorMsg = document.getElementById('resetPasswordError');
     var successMsg = document.getElementById('resetPasswordSuccess');
     
-    // 隐藏之前的消息
     errorMsg.style.display = 'none';
     successMsg.style.display = 'none';
     
-    // 验证两次密码是否一致
     if (newPassword !== confirmPassword) {
         errorMsg.textContent = '两次输入的密码不一致';
         errorMsg.style.display = 'block';
         return false;
     }
     
-    // 获取CSRF token
     var csrfToken = document.querySelector('meta[name="_csrf"]').content;
     var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
     
-    // 发送AJAX请求
-    fetch('/reset-password', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            [csrfHeader]: csrfToken
-        },
-        body: 'username=' + encodeURIComponent(username) + 
-              '&newPassword=' + encodeURIComponent(newPassword)
-    })
-    .then(response => response.text())
-    .then(result => {
-        if (result === 'success') {
-            // 重置成功
-            successMsg.style.display = 'block';
-            document.getElementById('forgotPasswordForm').reset();
-            // 不自动关闭模态框，让用户自己点击“返回登录”
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/reset-password', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader(csrfHeader, csrfToken);
+    
+    xhr.onload = function() {
+        var result = xhr.responseText;
+        if (xhr.status === 200) {
+            if (result === 'success') {
+                successMsg.style.display = 'block';
+                document.getElementById('forgotPasswordForm').reset();
+            } else {
+                errorMsg.textContent = result;
+                errorMsg.style.display = 'block';
+            }
         } else {
-            // 重置失败，显示错误信息
-            errorMsg.textContent = result;
+            errorMsg.textContent = '服务器错误，请稍后重试';
             errorMsg.style.display = 'block';
         }
-    })
-    .catch(error => {
+    };
+    
+    xhr.onerror = function() {
         errorMsg.textContent = '网络错误，请稍后重试';
         errorMsg.style.display = 'block';
-        console.error('Error:', error);
-    });
+    };
+    
+    xhr.send('username=' + encodeURIComponent(username) + 
+             '&newPassword=' + encodeURIComponent(newPassword));
     
     return false;
 }

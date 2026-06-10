@@ -1,0 +1,46 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "启动 demo6.8 (Spring Boot)",
+            "type": "shell",
+            "command": "mvn spring-boot:run",
+            "options": {
+                "cwd": "${workspaceFolder}/demo6.8"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "停止 demo6.8",
+            "type": "shell",
+            "command": "pkill -f 'spring-boot:run'",
+            "options": {
+                "cwd": "${workspaceFolder}/demo6.8"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "重启 demo6.8",
+            "dependsOrder": "sequence",
+            "dependsOn": ["停止 demo6.8", "启动 demo6.8 (Spring Boot)"],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ]
+}
