@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>安全演示</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">安全演示系统</a>
+        <div class="d-flex ms-auto align-items-center">
+            <div th:if="${#authorization.expression('isAuthenticated()')}">
+                <span class="nav-link text-light d-inline">当前用户：<span sec:authentication="name"></span></span>
+                <form th:action="@{/logout}" method="post" style="display: inline; margin-left: 10px;">
+                    <button type="submit" class="btn btn-outline-light">注销</button>
+                </form>
+            </div>
+            <div th:unless="${#authorization.expression('isAuthenticated()')}">
+                <button class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#loginModal">登录</button>
+                <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#registerModal">注册</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container text-center mt-5">
+    <h1>欢迎使用安全演示系统</h1>
+    <p class="lead">基于 Spring Security 的角色权限管理系统</p>
+    <div th:if="${#authorization.expression('isAuthenticated()')}">
+        <a href="/home" class="btn btn-success btn-lg mt-3">进入主页</a>
+    </div>
+    <div th:if="${param.registered}" class="alert alert-success mt-3">注册成功，请登录</div>
+    <div th:if="${param.logout}" class="alert alert-info mt-3">已退出</div>
+</div>
+
+<!-- 登录模态框 -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <form id="loginForm" onsubmit="return handleLogin(event)">
+            <div class="modal-header"><h5>登录</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="text" id="loginUsername" name="username" class="form-control" placeholder="用户名" required>
+                <input type="password" id="loginPassword" name="password" class="form-control mt-2" placeholder="密码" required>
+                <div id="loginErrorMsg" class="alert alert-danger mt-2" style="display:none;">用户名或密码错误</div>
+                <div class="mt-2 text-end">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" data-bs-dismiss="modal" class="text-decoration-none">忘记密码？</a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">登录</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+<!-- 注册模态框 -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <form id="registerForm" onsubmit="return handleRegister(event)">
+            <div class="modal-header"><h5>注册</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <input type="text" id="regUsername" name="username" class="form-control" placeholder="用户名" required>
+                <input type="password" id="regPassword" name="password" class="form-control mt-2" placeholder="密码" required>
+                <input type="password" id="regRepassword" name="repassword" class="form-control mt-2" placeholder="确认密码" required>
+                <div id="passwordError" class="alert alert-danger mt-2" style="display:none;">两次输入的密码不一致</div>
+                <div id="registerErrorMsg" class="alert alert-danger mt-2" style="display:none;"></div>
+                <div id="registerSuccessMsg" class="alert alert-success mt-2" style="display:none;">注册成功！</div>
+            </div>
+            <div class="modal-footer">
+                <span class="me-auto">已有账号？<a href="#" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal" class="text-decoration-none">去登录</a></span>
+                <button type="submit" class="btn btn-success">注册</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+<!-- 忘记密码模态框 -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <form id="forgotPasswordForm" onsubmit="return handleForgotPassword(event)">
+            <div class="modal-header"><h5>重置密码</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p class="text-muted small">请输入您的用户名和新密码</p>
+                <input type="text" id="resetUsername" name="username" class="form-control" placeholder="用户名" required>
+                <input type="password" id="resetNewPassword" name="newPassword" class="form-control mt-2" placeholder="新密码" required>
+                <input type="password" id="resetConfirmPassword" name="confirmPassword" class="form-control mt-2" placeholder="确认新密码" required>
+                <div id="resetPasswordError" class="alert alert-danger mt-2" style="display:none;"></div>
+                <div id="resetPasswordSuccess" class="alert alert-success mt-2" style="display:none;">密码重置成功！</div>
+            </div>
+            <div class="modal-footer">
+                <span class="me-auto"><a href="#" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal" class="text-decoration-none">返回登录</a></span>
+                <button type="submit" class="btn btn-warning">重置密码</button>
+            </div>
+        </form>
+    </div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// AJAX登录处理
+function handleLogin(event) {
+    event.preventDefault();
+    
+    var username = document.getElementById('loginUsername').value;
+    var password = document.getElementById('loginPassword').value;
+    var errorMsg = document.getElementById('loginErrorMsg');
+    
+    // 隐藏之前的错误信息
+    errorMsg.style.display = 'none';
+    
+    // 获取CSRF token
+    var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    
+    // 发送AJAX请求
+    fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            [csrfHeader]: csrfToken
+        },
+        body: 'username=' + encodeURIComponent(username) + 
+              '&password=' + encodeURIComponent(password)
+    })
+    .then(response => {
+        if (response.ok) {
+            // 登录成功，跳转到首页
+            window.location.href = '/home';
+        } else {
+            // 登录失败，读取错误信息
+            return response.text();
+        }
+    })
+    .then(result => {
+        if (result) {
+            // 显示错误信息
+            errorMsg.textContent = result;
+            errorMsg.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        errorMsg.textContent = '网络错误，请稍后重试';
+        errorMsg.style.display = 'block';
+        console.error('Error:', error);
+    });
+    
+    return false;
+}
+
+// AJAX注册处理
+function handleRegister(event) {
+    event.preventDefault();
+    
+    var username = document.getElementById('regUsername').value.trim();
+    var password = document.getElementById('regPassword').value;
+    var repassword = document.getElementById('regRepassword').value;
+    var passwordError = document.getElementById('passwordError');
+    var errorMsg = document.getElementById('registerErrorMsg');
+    var successMsg = document.getElementById('registerSuccessMsg');
+    
+    // 隐藏之前的消息
+    passwordError.style.display = 'none';
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+    
+    // 前端验证
+    if (password !== repassword) {
+        passwordError.style.display = 'block';
+        return false;
+    }
+    
+    // 获取CSRF token
+    var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    
+    // 发送AJAX请求
+    fetch('/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            [csrfHeader]: csrfToken  // 添加CSRF token
+        },
+        body: 'username=' + encodeURIComponent(username) + 
+              '&password=' + encodeURIComponent(password) + 
+              '&repassword=' + encodeURIComponent(repassword)
+    })
+    .then(response => response.text())
+    .then(result => {
+        if (result === 'success') {
+            // 注册成功
+            successMsg.style.display = 'block';
+            // 清空表单
+            document.getElementById('registerForm').reset();
+            // 2秒后关闭模态框并跳转到登录页
+            setTimeout(function() {
+                var modal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
+                modal.hide();
+                window.location.href = '/?registered';
+            }, 2000);
+        } else {
+            // 注册失败，显示错误信息
+            errorMsg.textContent = result;
+            errorMsg.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        errorMsg.textContent = '网络错误，请稍后重试';
+        errorMsg.style.display = 'block';
+        console.error('Error:', error);
+    });
+    
+    return false;
+}
+
+// 忘记密码处理
+function handleForgotPassword(event) {
+    event.preventDefault();
+    
+    var username = document.getElementById('resetUsername').value.trim();
+    var newPassword = document.getElementById('resetNewPassword').value;
+    var confirmPassword = document.getElementById('resetConfirmPassword').value;
+    var errorMsg = document.getElementById('resetPasswordError');
+    var successMsg = document.getElementById('resetPasswordSuccess');
+    
+    // 隐藏之前的消息
+    errorMsg.style.display = 'none';
+    successMsg.style.display = 'none';
+    
+    // 验证两次密码是否一致
+    if (newPassword !== confirmPassword) {
+        errorMsg.textContent = '两次输入的密码不一致';
+        errorMsg.style.display = 'block';
+        return false;
+    }
+    
+    // 获取CSRF token
+    var csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    
+    // 发送AJAX请求
+    fetch('/reset-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            [csrfHeader]: csrfToken
+        },
+        body: 'username=' + encodeURIComponent(username) + 
+              '&newPassword=' + encodeURIComponent(newPassword)
+    })
+    .then(response => response.text())
+    .then(result => {
+        if (result === 'success') {
+            // 重置成功
+            successMsg.style.display = 'block';
+            document.getElementById('forgotPasswordForm').reset();
+            // 不自动关闭模态框，让用户自己点击“返回登录”
+        } else {
+            // 重置失败，显示错误信息
+            errorMsg.textContent = result;
+            errorMsg.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        errorMsg.textContent = '网络错误，请稍后重试';
+        errorMsg.style.display = 'block';
+        console.error('Error:', error);
+    });
+    
+    return false;
+}
+</script>
+</body>
+</html>
